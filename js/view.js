@@ -28,21 +28,33 @@ export default class View {
   filter(filters) {
     const { type, words } = filters;
     const [, ...rows] = this.table.getElementsByTagName('tr');
+    
     for (const row of rows) {
       const [title, description, completed] = row.children;
       let shouldHide = false;
 
+      // 1. Filtrar por palabras (Buscador)
       if (words) {
-        shouldHide = !title.innerText.includes(words) && !description.innerText.includes(words);
+        const textToSearch = words.toLowerCase();
+        const titleText = title.innerText.toLowerCase();
+        const descText = description.innerText.toLowerCase();
+
+        // Si NO está en el título Y NO está en la descripción, debemos esconderlo
+        if (!titleText.includes(textToSearch) && !descText.includes(textToSearch)) {
+          shouldHide = true;
+        }
       }
 
-      const shouldBeCompleted = type === 'completed';
+      // 2. Filtrar por tipo (Completados / Incompletos)
       const isCompleted = completed.children[0].checked;
-
-      if (type !== 'all' && shouldBeCompleted !== isCompleted) {
-        shouldHide = true;
+      if (type !== 'all') {
+        const shouldBeCompleted = type === 'completed';
+        if (shouldBeCompleted !== isCompleted) {
+          shouldHide = true;
+        }
       }
 
+      // Aplicar el cambio visual
       if (shouldHide) {
         row.classList.add('d-none');
       } else {
